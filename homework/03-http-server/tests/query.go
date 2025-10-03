@@ -303,7 +303,7 @@ func (d DeleteAction) VerifyResponse(t *TC, r *http.Request, resp *http.Response
 
 // Action returns action for the query, or nil if query shouldn't do anything.
 func (q *Query) Action(env *Env, opts *RunOpts) Action {
-	if opts.ServerDomain != "" && q.HostHeader != opts.ServerDomain {
+	if q.HostHeader != opts.ServerDomain {
 		return HttpErrorAction{
 			Status: 400,
 		}

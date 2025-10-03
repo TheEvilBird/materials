@@ -23,7 +23,7 @@ func RunTestEmptyWorkDir(t *TC, seed int64, runner Runner) {
 		runOpts := RunOpts{
 			Port:             port,
 			WorkingDirectory: "",
-			ServerDomain:     "",
+			ServerDomain:     "localhost",
 			ListenAddr:       "0.0.0.0",
 			ExitCode:         make(chan int),
 		}
@@ -68,16 +68,15 @@ func RunTests(t *TC, seed int64, runner Runner, envGen *EnvGen, queriesGen *Quer
 		runOpts := RunOpts{
 			Port:             port,
 			WorkingDirectory: envDir,
-			ServerDomain:     "",
+			ServerDomain:     "localhost",
 			ListenAddr:       "0.0.0.0",
 		}
 		if queriesGen.AllHeaders {
 			possibleDomains := []string{
-				"",
-				"",
+				"localhost",
+				"cs.hse.ru",
 				"example.com",
 				"z0r.de",
-				"localhost",
 				"distsys-course.homework.net",
 			}
 			runOpts.ServerDomain = possibleDomains[r.Intn(len(possibleDomains))]

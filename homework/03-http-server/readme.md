@@ -17,9 +17,9 @@
 | `--host`              | `SERVER_HOST`              | `0.0.0.0`             | Хост, на котором нужно слушать входящие соединения            |
 | `--port`              | `SERVER_PORT`              | `8080`                | Порт, на котором нужно слушать входящие соединения            |
 | `--working-directory` | `SERVER_WORKING_DIRECTORY` |                       | Абсолютный путь к директории, в которой будут храниться файлы |
-| `--server-domain`     | `SERVER_DOMAIN`            |                       | Домен, на котором должен слушать сервер                       |
+| `--server-domain`     | `SERVER_DOMAIN`            | `localhost`           | Домен, на котором должен слушать сервер                       |
 
-Если не передан параметр командной строки, то значением параметра будет значение из окружения. Если же значение переменной окружения не указано, нужно использовать значение по умолчанию. 
+Если не передан параметр командной строки, то значением параметра будет значение из окружения. Если же значение переменной окружения не указано, нужно использовать значение по умолчанию.
 
 Если не задан параметр `working-directory`, то нужно сделать `exit(1)`.
 
@@ -246,7 +246,7 @@ INFO    TestHW/G1       Starting tests group    {"points": 3}
 INFO    TestHW/G1/42    Running command {"command": "python3 ../server/server.py --port=39371", "env": ["SERVER_PORT=80"]}
 INFO    TestHW/G1/1337  Running command {"command": "python3 ../server/server.py --port=32849 --working-directory=***", "env": ["SERVER_PORT=80", "SERVER_WORKING_DIRECTORY=/"]}
 DEBUG   TestHW/G1/1337  Waiting 100ms for server startup        {"attempt": 0, "error": "Get \"http://localhost:32849\": dial tcp 127.0.0.1:32849: connect: connection refused"}
-INFO:__main__:Starting server on 0.0.0.0:32849, domain None, working directory ***
+INFO:__main__:Starting server on 0.0.0.0:32849, domain localhost, working directory ***
 INFO:__main__:Listening at ('0.0.0.0', 32849)
 ...
 WARN    TestHW/G1/1337  Skipping next queries because of the failed query       {"skipped": 19, "failed": "TestHW/G1/1337/96006"}

@@ -127,7 +127,7 @@ func (o RunOpts) BuildConfig(r *rand.Rand, gen *EnvGen) (args string, env []stri
 		}
 	}
 
-	if o.ServerDomain == "" && r.Intn(2) == 1 {
+	if o.ServerDomain == "localhost" && r.Intn(2) == 1 {
 		// can omit default value
 	} else if gen.AllowEnv && r.Intn(3) == 1 {
 		// use env

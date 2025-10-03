@@ -80,4 +80,4 @@ def main(host, port, server_domain, working_directory):
 
 
 if __name__ == "__main__":
-    main(auto_envvar_prefix="SERVER")
+    main()
