@@ -125,6 +125,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "distsys-broadcast"
+version = "0.1.0"
+dependencies = [
+ "anysystem",
+ "clap",
+ "env_logger",
+ "log",
+ "rand",
+ "rand_pcg",
+ "serde",
+ "serde_json",
+ "sugars",
+]
+
+[[package]]
+name = "distsys-gossip"
+version = "0.1.0"
+dependencies = [
+ "anysystem",
+ "clap",
+ "serde",
+ "serde_json",
+ "sugars",
+]
+
+[[package]]
 name = "distsys-guarantees"
 version = "0.1.0"
 dependencies = [
