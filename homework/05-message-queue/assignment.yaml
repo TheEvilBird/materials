@@ -1,0 +1,3 @@
+solution-dir: solution
+tests:
+  command: docker run --privileged --pull always --rm -t -v ./solution:/hw/solution ghcr.io/distsys-course/message-queue:latest

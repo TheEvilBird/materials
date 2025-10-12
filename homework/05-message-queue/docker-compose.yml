@@ -1,0 +1,40 @@
+name: distsys-mq
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    volumes:
+      - ./tests/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    ports:
+      - 15672:15672
+      - 5672:5672
+
+  server:
+    image: distsys-mq-server
+    build:
+      context: ./solution/server
+    volumes:
+      - data-volume:/data
+    ports:
+      - 5000:5000
+
+  server-fdv:
+    image: distsys-mq-server-fdv
+    build:
+      context: ./solution/server
+    volumes:
+      - fake-data-volume:/data
+    ports:
+      - 5000:5000
+
+  worker:
+    image: distsys-mq-worker
+    build:
+      context: ./solution/worker
+    volumes:
+      - data-volume:/data
+    deploy:
+      replicas: 2
+
+volumes:
+  data-volume:
+  fake-data-volume:
