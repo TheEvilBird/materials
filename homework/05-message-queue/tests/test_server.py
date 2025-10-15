@@ -229,23 +229,28 @@ def post_images(num_requests):
 
 def wait_and_check_results(pending_ids, max_attempts):
     expected_count = len(pending_ids)
-    attempts = 0
+    attempt = 0
     while True:
-        response = requests.get(IMAGES_ENDPOINT, timeout=3)
-        logger.info(response.json())
-        assert response.status_code == 200
-        assert 'image_ids' in response.json()
-        ready_ids = response.json()['image_ids']
-        assert pending_ids.issuperset(ready_ids)
-        count = len(ready_ids)
-        if count == expected_count:
-            logger.info(f"Got {count} results")
-            return True
-        attempts += 1
-        if attempts == max_attempts:
-            logger.error(f"Got {count} results, expect {expected_count}, max attempts reached, give up")
+        attempt += 1
+        try:
+            response = requests.get(IMAGES_ENDPOINT, timeout=3)
+            logger.info(response.json())
+            assert response.status_code == 200
+            assert 'image_ids' in response.json()
+            ready_ids = response.json()['image_ids']
+            assert pending_ids.issuperset(ready_ids)
+            count = len(ready_ids)
+            if count == expected_count:
+                logger.info(f"Attempt {attempt} succeeded: got {count} results as expected")
+                return True
+            else:
+                logger.info(f"Attempt {attempt} not succeeded: got {count} results, expect {expected_count}")
+        except Exception as e:
+            logger.error(f"Attempt {attempt} failed: got exception {e}")
+        if attempt == max_attempts:
+            logger.error(f"Max attempts reached, give up")
             return False
-        logger.info(f"Got {count} results, expect {expected_count}, retry in 3 seconds...")
+        logger.info(f"Retry in 3 seconds...")
         time.sleep(3)
 
 
@@ -258,18 +263,23 @@ def check_image_caption(image_id):
 
 
 def check_task_queue(expected_count, max_attempts):
-    attempts = 0
+    attempt = 0
     while True:
-        response = requests.get(TASK_QUEUE_ENDPOINT)
-        assert response.status_code == 200
-        assert 'messages_ready' in response.json()
-        count = response.json()['messages_ready']
-        logger.info(f"Got {count} ready messages")
-        if count == expected_count:
+        attempt += 1
+        try:
+            response = requests.get(TASK_QUEUE_ENDPOINT, timeout=3)
+            assert response.status_code == 200
+            assert 'messages_ready' in response.json()
+            count = response.json()['messages_ready']
+            if count == expected_count:
+                logger.info(f"Attempt {attempt} succeeded: got {count} ready messages as expected")
+                return
+            else:
+                logger.info(f"Attempt {attempt} not succeeded: got {count} ready messages, expect {expected_count}")
+        except Exception as e:
+            logger.error(f"Attempt {attempt} failed: got exception {e}")
+        if attempt == max_attempts:
+            logger.error(f"Max attempts reached, give up")
             return
-        attempts += 1
-        if attempts == max_attempts:
-            logger.error(f"Got {count} ready messages, expect {expected_count}, max attempts reached, give up")
-            return
-        logger.info(f"Got {count} ready messages, expect {expected_count}, retry in 3 seconds...")
+        logger.info(f"Retry in 3 seconds...")
         time.sleep(3)
