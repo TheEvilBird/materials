@@ -21,7 +21,7 @@ logger.add(sys.stderr, colorize=False, format="=== TEST ===| {time:YYYY-MM-DD HH
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server']])
 def test_empty_data_dir(docker_tester):
-    response = requests.get(IMAGES_ENDPOINT)
+    response = requests.get(IMAGES_ENDPOINT, timeout=3)
     logger.info(response.json())
     assert response.status_code == 200
     assert 'image_ids' in response.json()
@@ -30,7 +30,7 @@ def test_empty_data_dir(docker_tester):
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server']])
 def test_bad_request(docker_tester):
-    response = requests.post(IMAGES_ENDPOINT, json={})
+    response = requests.post(IMAGES_ENDPOINT, json={}, timeout=3)
     logger.info(response)
     assert response.status_code == 400
 
@@ -38,7 +38,7 @@ def test_bad_request(docker_tester):
 @pytest.mark.parametrize("services", [['rabbitmq', 'server']])
 def test_nonexistent_image(docker_tester):
     nonexistent_image_id = str(uuid.uuid4())
-    response = requests.get(f'{IMAGES_ENDPOINT}/{nonexistent_image_id}')
+    response = requests.get(f'{IMAGES_ENDPOINT}/{nonexistent_image_id}', timeout=3)
     assert response.status_code == 404
 
 
@@ -217,7 +217,7 @@ def post_images(num_requests):
     pending_ids = set()
     for i in range(num_requests):
         input_data = {"image_url": f"https://somehost.com/some-image-{i}.jpg"}
-        response = requests.post(IMAGES_ENDPOINT, json=input_data)
+        response = requests.post(IMAGES_ENDPOINT, json=input_data, timeout=3)
         logger.info(response.json())
         assert response.status_code == 200
         assert 'image_id' in response.json()
@@ -255,7 +255,7 @@ def wait_and_check_results(pending_ids, max_attempts):
 
 
 def check_image_caption(image_id):
-    response = requests.get(f'{IMAGES_ENDPOINT}/{image_id}')
+    response = requests.get(f'{IMAGES_ENDPOINT}/{image_id}', timeout=3)
     logger.info(response.json())
     assert response.status_code == 200
     assert 'caption' in response.json()
