@@ -55,7 +55,7 @@ def test_task_queue(docker_tester):
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
 def test_single_image(docker_tester):
     pending_ids = post_images(1)
-    wait_and_check_results(pending_ids, 10)
+    assert wait_and_check_results(pending_ids, 10)
     for image_id in pending_ids:
         check_image_caption(image_id)
 
@@ -63,7 +63,7 @@ def test_single_image(docker_tester):
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
 def test_multiple_images(docker_tester):
     pending_ids = post_images(10)
-    wait_and_check_results(pending_ids, 10)
+    assert wait_and_check_results(pending_ids, 10)
     for image_id in pending_ids:
         check_image_caption(image_id)
 
@@ -79,23 +79,23 @@ def test_captions_generated_on_workers(docker_tester):
     pending_ids = post_images(10)
     time.sleep(5)    
 
-    wait_and_check_results(set(), 10)
+    assert wait_and_check_results(set(), 10)
     worker1.unpause()
     worker2.unpause()
-    wait_and_check_results(pending_ids, 10)
+    assert wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server-fdv', 'worker']])
 def test_multiple_images_no_listdir(docker_tester):
     pending_ids = post_images(10)
-    wait_and_check_results(pending_ids, 10)
+    assert wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
 def test_heartbeats_timeout(docker_tester):
     time.sleep(15)
     pending_ids = post_images(10)
-    wait_and_check_results(pending_ids, 10)
+    assert wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
@@ -107,7 +107,7 @@ def test_publisher_confirms(docker_tester):
     rabbit.kill()
     time.sleep(1)
     rabbit.start()
-    wait_and_check_results(pending_ids, 10)
+    assert wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
@@ -117,7 +117,7 @@ def test_faulty_worker(docker_tester):
     pending_ids = post_images(10)
     time.sleep(5)
     worker1.kill()
-    wait_and_check_results(pending_ids, 10)
+    assert wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
@@ -132,7 +132,7 @@ def test_two_faulty_workers(docker_tester):
     worker2.kill()
     time.sleep(5)
     worker1.start()
-    wait_and_check_results(pending_ids, 10)
+    assert wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
@@ -146,13 +146,13 @@ def test_faulty_worker_and_rabbit_restart(docker_tester):
     worker1.kill()
     time.sleep(5)
     rabbit.start()
-    wait_and_check_results(pending_ids, 10)
+    assert wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
 def test_total_eclipse_of_the_heart(docker_tester):
     pending_ids = post_images(10)
-    wait_and_check_results(pending_ids, 10)
+    assert wait_and_check_results(pending_ids, 10)
 
     docker_tester.containers.get("distsys-mq-worker-1").kill()
     docker_tester.containers.get("distsys-mq-worker-2").kill()
@@ -160,7 +160,7 @@ def test_total_eclipse_of_the_heart(docker_tester):
 
     post_images(10)
     time.sleep(5)
-    wait_and_check_results(pending_ids, 10)
+    assert wait_and_check_results(pending_ids, 10)
 
     docker_tester.containers.get("distsys-mq-server-1").restart()
     # can your server pass this test if the next line is commented?
@@ -168,7 +168,7 @@ def test_total_eclipse_of_the_heart(docker_tester):
     assert check_server_endpoint()
     post_images(10)
     time.sleep(5)
-    wait_and_check_results(set(), 10)
+    assert wait_and_check_results(set(), 10)
 
 
 # Utils ===============================================================================================================
