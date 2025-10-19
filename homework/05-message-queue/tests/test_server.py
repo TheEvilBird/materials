@@ -21,8 +21,13 @@ logger.add(sys.stderr, colorize=False, format="=== TEST ===| {time:YYYY-MM-DD HH
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server']])
 def test_empty_data_dir(docker_tester):
-    response = requests.get(IMAGES_ENDPOINT, timeout=3)
-    logger.info(response.json())
+    logger.info(f"Sending GET {IMAGES_ENDPOINT}")
+    try:
+        response = requests.get(IMAGES_ENDPOINT, timeout=3)
+    except Exception as e:
+        logger.error(f"Request failed: {e}")
+        pytest.fail(f"Failed to get images: {e}")
+    logger.info(f"Got response: {response.status_code} {response.text.rstrip()}")
     assert response.status_code == 200
     assert 'image_ids' in response.json()
     assert len(response.json()['image_ids']) == 0
@@ -30,15 +35,26 @@ def test_empty_data_dir(docker_tester):
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server']])
 def test_bad_request(docker_tester):
-    response = requests.post(IMAGES_ENDPOINT, json={}, timeout=3)
-    logger.info(response)
+    logger.info(f"Sending POST {IMAGES_ENDPOINT} {{}}")
+    try:
+        response = requests.post(IMAGES_ENDPOINT, json={}, timeout=3)
+    except Exception as e:
+        logger.error(f"Request failed: {e}")
+        pytest.fail(f"Failed to post image: {e}")
+    logger.info(f"Got response: {response.status_code} {response.text.rstrip()}")
     assert response.status_code == 400
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server']])
 def test_nonexistent_image(docker_tester):
     nonexistent_image_id = str(uuid.uuid4())
-    response = requests.get(f'{IMAGES_ENDPOINT}/{nonexistent_image_id}', timeout=3)
+    logger.info(f"Sending GET {IMAGES_ENDPOINT}/{nonexistent_image_id}")
+    try:
+        response = requests.get(f'{IMAGES_ENDPOINT}/{nonexistent_image_id}', timeout=3)
+    except Exception as e:
+        logger.error(f"Request failed: {e}")
+        pytest.fail(f"Failed to get images: {e}")
+    logger.info(f"Got response: {response.status_code} {response.text.rstrip()}")
     assert response.status_code == 404
 
 
@@ -55,7 +71,7 @@ def test_task_queue(docker_tester):
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
 def test_single_image(docker_tester):
     pending_ids = post_images(1)
-    assert wait_and_check_results(pending_ids, 10)
+    wait_and_check_results(pending_ids, 10)
     for image_id in pending_ids:
         check_image_caption(image_id)
 
@@ -63,7 +79,7 @@ def test_single_image(docker_tester):
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
 def test_multiple_images(docker_tester):
     pending_ids = post_images(10)
-    assert wait_and_check_results(pending_ids, 10)
+    wait_and_check_results(pending_ids, 10)
     for image_id in pending_ids:
         check_image_caption(image_id)
 
@@ -79,23 +95,23 @@ def test_captions_generated_on_workers(docker_tester):
     pending_ids = post_images(10)
     time.sleep(5)    
 
-    assert wait_and_check_results(set(), 10)
+    wait_and_check_results(set(), 10)
     worker1.unpause()
     worker2.unpause()
-    assert wait_and_check_results(pending_ids, 10)
+    wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server-fdv', 'worker']])
 def test_multiple_images_no_listdir(docker_tester):
     pending_ids = post_images(10)
-    assert wait_and_check_results(pending_ids, 10)
+    wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
 def test_heartbeats_timeout(docker_tester):
     time.sleep(15)
     pending_ids = post_images(10)
-    assert wait_and_check_results(pending_ids, 10)
+    wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
@@ -107,7 +123,7 @@ def test_publisher_confirms(docker_tester):
     rabbit.kill()
     time.sleep(1)
     rabbit.start()
-    assert wait_and_check_results(pending_ids, 10)
+    wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
@@ -117,7 +133,7 @@ def test_faulty_worker(docker_tester):
     pending_ids = post_images(10)
     time.sleep(5)
     worker1.kill()
-    assert wait_and_check_results(pending_ids, 10)
+    wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
@@ -132,7 +148,7 @@ def test_two_faulty_workers(docker_tester):
     worker2.kill()
     time.sleep(5)
     worker1.start()
-    assert wait_and_check_results(pending_ids, 10)
+    wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
@@ -146,13 +162,13 @@ def test_faulty_worker_and_rabbit_restart(docker_tester):
     worker1.kill()
     time.sleep(5)
     rabbit.start()
-    assert wait_and_check_results(pending_ids, 10)
+    wait_and_check_results(pending_ids, 10)
 
 
 @pytest.mark.parametrize("services", [['rabbitmq', 'server', 'worker']])
 def test_total_eclipse_of_the_heart(docker_tester):
     pending_ids = post_images(10)
-    assert wait_and_check_results(pending_ids, 10)
+    wait_and_check_results(pending_ids, 10)
 
     docker_tester.containers.get("distsys-mq-worker-1").kill()
     docker_tester.containers.get("distsys-mq-worker-2").kill()
@@ -160,15 +176,15 @@ def test_total_eclipse_of_the_heart(docker_tester):
 
     post_images(10)
     time.sleep(5)
-    assert wait_and_check_results(pending_ids, 10)
+    wait_and_check_results(pending_ids, 10)
 
     docker_tester.containers.get("distsys-mq-server-1").restart()
     # can your server pass this test if the next line is commented?
     docker_tester.containers.get("distsys-mq-rabbitmq-1").start()
-    assert check_server_endpoint()
+    check_server_endpoint()
     post_images(10)
     time.sleep(5)
-    assert wait_and_check_results(set(), 10)
+    wait_and_check_results(set(), 10)
 
 
 # Utils ===============================================================================================================
@@ -177,7 +193,7 @@ def test_total_eclipse_of_the_heart(docker_tester):
 def docker_tester(services):
     print()
     run_docker_compose_up(services)
-    assert check_server_endpoint()
+    check_server_endpoint()
     client = docker.from_env()
     yield client
     print()
@@ -196,29 +212,35 @@ def run_docker_compose_down():
     subprocess.run(command, cwd=Path(__file__).parent.parent.absolute(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-def check_server_endpoint():
-    attempts = 0
+def check_server_endpoint(max_attempts=10):
+    attempt = 0
     while True:
+        attempt += 1
         try:
+            logger.info(f"Sending GET {IMAGES_ENDPOINT}")
             requests.get(f'{IMAGES_ENDPOINT}', timeout=3)
-            logger.info("Server endpoint is ready")
-            return True
-        except requests.exceptions.ConnectionError:
-            attempts += 1
-            if attempts == 10:
-                logger.error("Server endpoint is not ready, max attempts reached, give up")
-                return False
-            else:
-                logger.info("Server endpoint is not ready, retry in 3 seconds...")
-                time.sleep(3)
+            logger.info(f"Attempt {attempt} succeeded: got response, server endpoint is ready")
+            return
+        except Exception as e:
+            logger.error(f"Attempt {attempt} failed: {e}")
+        if attempt == max_attempts:
+            logger.error(f"Max attempts reached, give up")
+            pytest.fail("Server endpoint is not ready")
+        logger.info(f"Retry in 3 seconds...")
+        time.sleep(3)
 
 
 def post_images(num_requests):
     pending_ids = set()
     for i in range(num_requests):
         input_data = {"image_url": f"https://somehost.com/some-image-{i}.jpg"}
-        response = requests.post(IMAGES_ENDPOINT, json=input_data, timeout=3)
-        logger.info(response.json())
+        logger.info(f"Sending POST {IMAGES_ENDPOINT} {input_data}")
+        try:
+            response = requests.post(IMAGES_ENDPOINT, json=input_data, timeout=3)
+        except Exception as e:
+            logger.error(f"Request failed: {e}")
+            pytest.fail(f"Failed to post image: {e}")
+        logger.info(f"Got response: {response.status_code} {response.text.rstrip()}")
         assert response.status_code == 200
         assert 'image_id' in response.json()
         image_id = response.json()['image_id']
@@ -233,8 +255,9 @@ def wait_and_check_results(pending_ids, max_attempts):
     while True:
         attempt += 1
         try:
+            logger.info(f"Sending GET {IMAGES_ENDPOINT}")
             response = requests.get(IMAGES_ENDPOINT, timeout=3)
-            logger.info(response.json())
+            logger.info(f"Got response: {response.status_code} {response.text.rstrip()}")
             assert response.status_code == 200
             assert 'image_ids' in response.json()
             ready_ids = response.json()['image_ids']
@@ -242,21 +265,26 @@ def wait_and_check_results(pending_ids, max_attempts):
             count = len(ready_ids)
             if count == expected_count:
                 logger.info(f"Attempt {attempt} succeeded: got {count} results as expected")
-                return True
+                return
             else:
                 logger.info(f"Attempt {attempt} not succeeded: got {count} results, expect {expected_count}")
         except Exception as e:
-            logger.error(f"Attempt {attempt} failed: got exception {e}")
+            logger.error(f"Attempt {attempt} failed: {e}")
         if attempt == max_attempts:
             logger.error(f"Max attempts reached, give up")
-            return False
+            pytest.fail("Server didn't return expected results")
         logger.info(f"Retry in 3 seconds...")
         time.sleep(3)
 
 
 def check_image_caption(image_id):
-    response = requests.get(f'{IMAGES_ENDPOINT}/{image_id}', timeout=3)
-    logger.info(response.json())
+    logger.info(f"Sending GET {IMAGES_ENDPOINT}/{image_id}")
+    try:
+        response = requests.get(f'{IMAGES_ENDPOINT}/{image_id}', timeout=3)
+    except Exception as e:
+        logger.error(f"Request failed: {e}")
+        pytest.fail(f"Failed to get image caption: {e}")
+    logger.info(f"Got response: {response.status_code} {response.text.rstrip()}")
     assert response.status_code == 200
     assert 'caption' in response.json()
     assert isinstance(response.json()['caption'], str)
@@ -267,7 +295,9 @@ def check_task_queue(expected_count, max_attempts):
     while True:
         attempt += 1
         try:
+            logger.info(f"Sending GET {TASK_QUEUE_ENDPOINT}")
             response = requests.get(TASK_QUEUE_ENDPOINT, timeout=3)
+            logger.info(f"Got response: {response.status_code} {response.text.rstrip()}")
             assert response.status_code == 200
             assert 'messages_ready' in response.json()
             count = response.json()['messages_ready']
@@ -277,9 +307,9 @@ def check_task_queue(expected_count, max_attempts):
             else:
                 logger.info(f"Attempt {attempt} not succeeded: got {count} ready messages, expect {expected_count}")
         except Exception as e:
-            logger.error(f"Attempt {attempt} failed: got exception {e}")
+            logger.error(f"Attempt {attempt} failed: {e}")
         if attempt == max_attempts:
             logger.error(f"Max attempts reached, give up")
-            return
+            pytest.fail("Message broker didn't return expected number of ready messages")
         logger.info(f"Retry in 3 seconds...")
         time.sleep(3)

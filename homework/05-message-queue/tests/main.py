@@ -68,7 +68,7 @@ class PassedCounter:
 
 counter = PassedCounter()
 
-pytest.main(['-vs', SCRIPT_DIR / 'test_server.py'], plugins=[counter])
+pytest.main(['-vs', '--tb=short', SCRIPT_DIR / 'test_server.py'], plugins=[counter])
 
 score = 0
 print()

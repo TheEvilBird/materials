@@ -117,7 +117,7 @@ python3 tests/main.py
 Отдельный тест можно запустить так:
 
 ```
-pytest -vs tests/test_server.py::test_single_image
+pytest -vs --tb=short tests/test_server.py::test_single_image
 ```
 
 Для тестирования также можно использовать команду `python3 ../cli.py test`. В этом случае используемое окружение будет аналогично тестирующей системе.
