@@ -165,6 +165,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "distsys-membership"
+version = "0.1.0"
+dependencies = [
+ "anysystem",
+ "assertables",
+ "clap",
+ "env_logger",
+ "log",
+ "rand",
+ "rand_pcg",
+ "serde",
+ "serde_json",
+ "sugars",
+]
+
+[[package]]
 name = "distsys-ping-pong"
 version = "0.1.0"
 dependencies = [
