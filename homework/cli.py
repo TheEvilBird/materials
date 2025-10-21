@@ -87,7 +87,7 @@ def test_full():
     subprocess.run(tests_command)
 
 
-def submit():
+def submit(force=False):
     assignment, config = get_current_assignment()
     session = requests.Session()
     session.headers.update({"Authorization": f"Bearer {get_token()}"})
@@ -140,7 +140,8 @@ def submit():
             'name': assignment,
             'inputs': {
                 'assignment': assignment,
-                'solution': solution_zip_uri
+                'solution': solution_zip_uri,
+                'force': force
             }
         }
     )
@@ -229,7 +230,8 @@ if __name__ == "__main__":
             tests_options = sys.argv[2:] if len(sys.argv) >= 3 else []
             test(tests_options)
     elif command == 'submit':
-        submit()
+        force = len(sys.argv) == 3 and sys.argv[2] == '--force'
+        submit(force)
     elif command == 'watch':
         watch()
     elif command == 'cancel':
