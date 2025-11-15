@@ -23,8 +23,11 @@ class Message:
     def __setitem__(self, key: str, value: Any):
         self._data[key] = value
 
-    def remove(self, key: str):
-        self._data.pop(key, None)
+    def get(self, key: str, default: Any = None) -> Any:
+        return self._data.get(key, default)
+
+    def remove(self, key: str) -> Any:
+        return self._data.pop(key, None)
 
     @staticmethod
     def from_json(message_type: str, json_str: str) -> Message:
